@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informations des Parties de Jeux</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Informations des Parties de Jeux</h1>
+
+    <div id="partie-info">
+        </div>
+            <div id="player-stats">
+        </div>
+
+    <form id="form-partie">
+        <h2>Créer une nouvelle partie</h2>
+        <label for="nomPartie">Nom de la partie:</label>
+        <input type="text" id="nomPartie" name="nomPartie" required>
+
+        <label for="idJoueur1">ID Joueur 1:</label>
+        <input type="text" id="idJoueur1" name="idJoueur1" required>
+
+        <label for="idJoueur2">ID Joueur 2:</label>
+        <input type="text" id="idJoueur2" name="idJoueur2" required>
+
+        <button type="submit">Créer</button>
+    </form>
+        <button id="afficherStatBtn">Afficher stat</button>
+
+    <script>
+        const socket = io();
+
+        document.getElementById('form-partie').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nom = document.getElementById('nomPartie').value;
+            const idJoueur1 = document.getElementById('idJoueur1').value;
+            const idJoueur2 = document.getElementById('idJoueur2').value;
+
+            const partie = {
+                nom,
+                idJoueur1,
+                idJoueur2
+               
+            };
+
+            socket.emit('nouvellePartie', partie);
+        });
+
+        socket.on('partieNotif', (partie) => {
+            const partieInfoContainer = document.getElementById('partie-info');
+            const partieDiv = document.createElement('div');
+            partieDiv.innerHTML = `
+             
+           
+                <p>Nom Partie: ${partie.nom}</p>
+                <p>Joueur 1: ${partie.joueur1._id}</p>
+                <p>Joueur 2: ${partie.joueur2._id}</p>
+              
+            `;
+            partieInfoContainer.appendChild(partieDiv);
+        });
+
+    document.getElementById('afficherStatBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const idJoueur1 = document.getElementById('idJoueur1').value;
+            const idJoueur2 = document.getElementById('idJoueur2').value;
+
+            const partie = {
+                
+                idJoueur1,
+                idJoueur2
+               
+            };
+      socket.emit('getPlayersInfo',partie);
+    });
+
+    socket.on('playersInfo', (players) => {
+      const playerStatsContainer = document.getElementById('player-stats');
+      playerStatsContainer.innerHTML = `
+        <h3>Joueur 1:</h3>
+        <p>Pseudo: ${players.joueur1.pseudo}</p>
+        <p>Score: ${players.joueur1.score || 0}</p>  <p>Santé: ${players.joueur1.sante || 0}</p>  <h3>Joueur 2:</h3>
+        <p>Pseudo: ${players.joueur2.pseudo}</p>
+        <p>Score: ${players.joueur2.score || 0}</p>  <p>Santé: ${players.joueur2.sante || 0}</p>  `;
+    });
+
+
+    </script>
+</body>
+</html>
